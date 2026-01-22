@@ -1,4 +1,4 @@
 *
 !.gitignore
-!POC landing/
-!POC landing/**
+!poc-landing/
+!poc-landing/**
