@@ -33,6 +33,7 @@ Crear archivo `.env.local` (o copiar desde `.env.example`):
 ```env
 PUNCH_API_BASE_URL=https://api.example.com
 NEXT_PUBLIC_BASE_URL=http://localhost:3000
+NEXT_PUBLIC_ALLOW_INDEXING=false
 ```
 
 3. Ejecutar en desarrollo:
@@ -51,7 +52,8 @@ POC landing/
 │   ├── layout.tsx          # Layout raíz
 │   ├── page.tsx            # Home page
 │   ├── buscar/             # Página de búsqueda (noindex)
-│   ├── principio-activo/   # Páginas dinámicas de principios activos
+│   ├── principio-activo/   # Páginas dinámicas de principios activos (SSR/ISR)
+│   ├── api/active-ingredients/ # Mock API interna
 │   ├── sitemap.ts          # Sitemap dinámico
 │   └── robots.ts           # robots.txt
 ├── components/             # Componentes React
@@ -60,7 +62,8 @@ POC landing/
 │   ├── active-ingredient/  # Componentes de principio activo
 │   └── layout/             # Header y Footer
 ├── lib/                    # Utilidades y lógica
-│   ├── api/                # Cliente API, adapter, mock
+│   ├── api/                # Cliente API y adapters
+│   ├── mock/               # Data mock interna
 │   └── utils/              # Utilidades (slug, format)
 ├── types/                  # Tipos TypeScript
 │   └── domain.ts           # Tipos de dominio
@@ -71,28 +74,39 @@ POC landing/
 
 - **Revalidación estándar**: 14400 segundos (4 horas)
 - Las páginas de principio activo usan ISR (Incremental Static Regeneration)
+- La página `/principio-activo/[slug]` revalida mediante fetch server-side con `next: { revalidate: 14400 }`
+
+## Mock API (interno)
+
+- Endpoints mock en `app/api/active-ingredients/*`.
+- Datos editables en `lib/mock/active-ingredients.ts` (slugs disponibles, grupos, precios, historial).
+
+## Notas de accesibilidad
+
+- Se incluye link “Saltar al contenido principal”.
+- Tablas con `<caption>` y encabezados `<th scope>`.
+- En mobile, la tabla de precios se transforma en cards con labels visibles.
+- Los tabs son accesibles con roles/aria y navegación por teclado.
 - El sitemap se regenera en cada build
 
 ## Cambiar de Mock a API Real
 
-Actualmente el proyecto usa un mock API en `lib/api/mock.ts`. Para conectar la API real:
+Actualmente el proyecto usa un mock API en `app/api/active-ingredients` con datos en
+`lib/mock/active-ingredients.ts`. Para conectar la API real:
 
-1. Actualizar `lib/api/adapter.ts`:
+1. Actualizar `lib/api/active-ingredients-client.ts` para apuntar al backend real
+   usando `PUNCH_API_BASE_URL`.
+2. Ajustar los endpoints según la documentación de la API real.
+3. Validar respuestas con los schemas de Zod en `lib/api/validation.ts`.
+
+Ejemplo base para un fetch real:
 
 ```typescript
-// Cambiar de:
-import { getActiveIngredients, ... } from './mock';
-
-// A:
 import { apiFetch } from './client';
 
-export async function fetchActiveIngredients(query?: string) {
+export async function fetchActiveIngredientDetail(slug: string) {
   const baseUrl = process.env.PUNCH_API_BASE_URL;
-  const url = query 
-    ? `${baseUrl}/active-ingredients?query=${encodeURIComponent(query)}`
-    : `${baseUrl}/active-ingredients`;
-  
-  return apiFetch<SearchGeneric[]>(url);
+  return apiFetch(`${baseUrl}/active-ingredients/${slug}`);
 }
 ```
 

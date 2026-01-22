@@ -1,15 +1,15 @@
 import type { MetadataRoute } from 'next';
-import { fetchActiveIngredients, fetchBrands } from '@/lib/api/adapter';
-import { slugify } from '@/lib/utils/slug';
+import { fetchBrands } from '@/lib/api/adapter';
+import { fetchActiveIngredientsIndex } from '@/lib/api/active-ingredients-client';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'https://example.com';
   
-  const ingredients = await fetchActiveIngredients();
+  const ingredients = await fetchActiveIngredientsIndex();
   const brands = await fetchBrands();
   
   const ingredientPages = ingredients.map((ingredient) => ({
-    url: `${baseUrl}/principio-activo/${slugify(ingredient.activePrinciple)}`,
+    url: `${baseUrl}/principio-activo/${ingredient.slug}`,
     lastModified: new Date(),
     changeFrequency: 'daily' as const,
     priority: 0.8,

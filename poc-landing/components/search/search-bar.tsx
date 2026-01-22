@@ -7,14 +7,22 @@ interface SearchBarProps {
   onSearch: (query: string) => void;
   placeholder?: string;
   debounceMs?: number;
+  initialValue?: string;
 }
 
 export function SearchBar({
   onSearch,
   placeholder = 'Busca por principio activo o marca...',
   debounceMs = 300,
+  initialValue = '',
 }: SearchBarProps) {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialValue);
+
+  useEffect(() => {
+    if (initialValue !== query) {
+      setQuery(initialValue);
+    }
+  }, [initialValue, query]);
 
   useEffect(() => {
     const timer = setTimeout(() => {

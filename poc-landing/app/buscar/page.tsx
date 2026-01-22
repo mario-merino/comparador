@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { SearchBar } from '@/components/search/search-bar';
 import { fetchSearchResults } from '@/lib/api/adapter';
 import type { SearchEntity } from '@/lib/api/types';
@@ -8,16 +9,11 @@ import { ItemType } from '@/lib/api/types';
 import { slugify } from '@/lib/utils/slug';
 import Link from 'next/link';
 
-export const metadata = {
-  robots: {
-    index: false,
-    follow: false,
-  },
-};
-
 export default function BuscarPage() {
+  const searchParams = useSearchParams();
   const [results, setResults] = useState<SearchEntity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [initialQuery, setInitialQuery] = useState('');
 
   const handleSearch = useCallback(async (query: string) => {
     if (!query.trim()) {
@@ -34,12 +30,21 @@ export default function BuscarPage() {
     }
   }, []);
 
+  useEffect(() => {
+    const q = searchParams.get('q');
+    if (q && q !== initialQuery) {
+      setInitialQuery(q);
+      handleSearch(q);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <h1 className="text-3xl font-bold text-gray-900 mb-8">
         Buscar Principio Activo o Marca
       </h1>
-      <SearchBar onSearch={handleSearch} />
+      <SearchBar onSearch={handleSearch} initialValue={initialQuery} />
       <div className="mt-6">
         {isLoading ? (
           <p className="text-gray-600">Buscando...</p>
