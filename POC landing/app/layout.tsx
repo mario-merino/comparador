@@ -5,6 +5,7 @@ import { Header } from '@/components/layout/header';
 import { Footer } from '@/components/layout/footer';
 
 const inter = Inter({ subsets: ['latin'] });
+const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === 'true';
 
 export const metadata: Metadata = {
   title: {
@@ -13,6 +14,9 @@ export const metadata: Metadata = {
   },
   description:
     'Compara precios de medicamentos por principio activo. Encuentra el mejor precio en diferentes farmacias.',
+  robots: allowIndexing
+    ? { index: true, follow: true }
+    : { index: false, follow: false },
   openGraph: {
     type: 'website',
     locale: 'es_CL',
