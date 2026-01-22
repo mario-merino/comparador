@@ -11,7 +11,7 @@ interface SearchBarProps {
 
 export function SearchBar({
   onSearch,
-  placeholder = 'Buscar principio activo...',
+  placeholder = 'Busca por principio activo o marca...',
   debounceMs = 300,
 }: SearchBarProps) {
   const [query, setQuery] = useState('');
